@@ -13,7 +13,6 @@
 #  limitations under the License.
 
 import rclpy
-import re
 
 from rclpy.serialization import deserialize_message
 
@@ -25,18 +24,17 @@ class RosService(RosSender):
     Class to send messages to a ROS service.
     """
 
-    def __init__(self, service, service_class):
+    def __init__(self, service, service_class, tcp_server):
         """
         Args:
             service:        The service name in ROS
             service_class:  The service class in catkin workspace
         """
-        strippedService = re.sub("[^A-Za-z0-9_]+", "", service)
-        node_name = f"{strippedService}_RosService"
-        RosSender.__init__(self, node_name)
+        RosSender.__init__(self)
 
+        self.tcp_server = tcp_server
         self.service_topic = service
-        self.cli = self.create_client(service_class, service)
+        self.cli = self.tcp_server.create_client(service_class, service)
         self.req = service_class.Request()
 
     def send(self, data):
@@ -80,5 +78,4 @@ class RosService(RosSender):
         Returns:
 
         """
-        self.destroy_client(self.cli)
-        self.destroy_node()
+        self.tcp_server.destroy_client(self.cli)

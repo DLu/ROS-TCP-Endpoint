@@ -13,7 +13,6 @@
 #  limitations under the License.
 
 from rclpy.qos import QoSProfile, QoSDurabilityPolicy
-import re
 
 from rclpy.serialization import deserialize_message
 
@@ -25,7 +24,7 @@ class RosPublisher(RosSender):
     Class to publish messages to a ROS topic
     """
 
-    def __init__(self, topic, message_class, queue_size=10, latch=False):
+    def __init__(self, topic, message_class, tcp_server, queue_size=10, latch=False):
         """
 
         Args:
@@ -33,16 +32,15 @@ class RosPublisher(RosSender):
             message_class: The message class in catkin workspace
             queue_size:    Max number of entries to maintain in an outgoing queue
         """
-        strippedTopic = re.sub("[^A-Za-z0-9_]+", "", topic)
-        node_name = f"{strippedTopic}_RosPublisher"
-        RosSender.__init__(self, node_name)
+        RosSender.__init__(self)
+        self.tcp_server = tcp_server
         self.msg = message_class()
 
         qos_profile = QoSProfile(depth=queue_size)
         if latch:
             qos_profile.durability = QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
 
-        self.pub = self.create_publisher(message_class, topic, qos_profile)
+        self.pub = self.tcp_server.create_publisher(message_class, topic, qos_profile)
 
     def send(self, data):
         """
@@ -68,5 +66,4 @@ class RosPublisher(RosSender):
         Returns:
 
         """
-        self.destroy_publisher(self.pub)
-        self.destroy_node()
+        self.tcp_server.destroy_publisher(self.pub)

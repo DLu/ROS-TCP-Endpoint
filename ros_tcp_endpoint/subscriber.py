@@ -14,7 +14,6 @@
 
 import rclpy
 import socket
-import re
 
 from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, QoSReliabilityPolicy
 from rclpy.qos import QoSProfile
@@ -35,9 +34,7 @@ class RosSubscriber(RosReceiver):
             message_class: The message class in catkin workspace
             queue_size:    Max number of entries to maintain in an outgoing queue
         """
-        strippedTopic = re.sub("[^A-Za-z0-9_]+", "", topic)
-        self.node_name = f"{strippedTopic}_RosSubscriber"
-        RosReceiver.__init__(self, self.node_name)
+        RosReceiver.__init__(self)
         self.topic = topic
         self.msg = message_class
         self.tcp_server = tcp_server
@@ -46,10 +43,9 @@ class RosSubscriber(RosReceiver):
         qos_profile = QoSProfile(depth=queue_size)
 
         # Start Subscriber listener function
-        self.subscription = self.create_subscription(
+        self.subscription = self.tcp_server.create_subscription(
             self.msg, self.topic, self.send, qos_profile  # queue_size
         )
-        self.subscription
 
     def send(self, data):
         """
@@ -70,5 +66,4 @@ class RosSubscriber(RosReceiver):
         Returns:
 
         """
-        self.destroy_subscription(self.subscription)
-        self.destroy_node()
+        self.tcp_server.destroy_subscription(self.subscription)

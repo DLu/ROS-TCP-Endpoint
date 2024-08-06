@@ -221,7 +221,7 @@ class ClientThread(threading.Thread):
                     self.tcp_server.send_unity_error(error_msg)
                     self.tcp_server.logerr(error_msg)
         except IOError as e:
-            self.tcp_server.logerr("Exception: {}".format(e))
+            self.tcp_server.logerr("Client Exception: {}".format(e))
         finally:
             halt_event.set()
             self.conn.close()

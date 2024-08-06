@@ -191,7 +191,7 @@ class UnityTcpSender:
                 try:
                     conn.sendall(item)
                 except Exception as e:
-                    self.tcp_server.logerr("Exception {}".format(e))
+                    self.tcp_server.logerr("Sender Exception {}".format(e))
                     break
         finally:
             halt_event.set()
